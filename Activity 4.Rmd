@@ -1,0 +1,156 @@
+---
+title: "| Introduction to Data Science    \n| Activity A4: Multivariate Visualization\n"
+author: "Joe Margolis"
+output:
+  bookdown::html_document2:
+    split_by: none
+    toc: no
+
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(gplots)
+knitr::opts_chunk$set(tidy = FALSE, message=FALSE)
+options(htmltools.dir.version = FALSE)
+```
+
+
+# Exploring SAT Scores
+
+Though far from a perfect assessment of academic preparedness, SAT scores are often used as one measurement of a state's education system.  The `education` data stored at [https://www.macalester.edu/~ajohns24/data/sat.csv](https://www.macalester.edu/~ajohns24/data/sat.csv) contain various education variables for each state:
+
+```{r}
+education <- read.csv("https://www.macalester.edu/~ajohns24/data/sat.csv")
+```
+
+```{r, echo=FALSE}
+knitr::kable(
+ education[1:6,],caption="The first few rows of the SAT data."
+)
+```
+
+A codebook is provided by Danny Kaplan who also made these data accessible:
+
+```{r, echo=FALSE,out.width="750px",fig.cap="Codebook for SAT data. Source: https://www.macalester.edu/~kaplan/ISM/datasets/data-documentation.pdf"}
+knitr::include_graphics("https://www.macalester.edu/~dshuman1/data/112/SATcodebook.png") 
+```
+
+To examine the variability in average SAT scores from state to state, let's start with a univariate density plot:
+
+```{r, fig.width=6,fig.height=3}
+ggplot(education, aes(x=sat))+   
+  geom_density(fill="blue",alpha=.5)
+```
+
+The first question we'd like to answer is to what degree do per pupil spending (`expend`) and teacher `salary` *explain* this variability? We can start by plotting each against `sat`, along with a best fit linear regression model:
+
+```{r, fig.width=3,fig.height=3,fig.fullwidth=TRUE,fig.show='hold'}
+ggplot(education, aes(y=sat,x=salary))+
+  geom_point()+
+  geom_smooth(se=FALSE,method="lm")
+ggplot(education, aes(y=sat,x=expend))+
+  geom_point()+
+  geom_smooth(se=FALSE,method="lm")
+```
+
+```{exercise}
+Is there anything that surprises you in the above plots? What are the relationship trends?
+
+```
+It is surprising that as teacher salary and school expenditures increase, the SAT scores actually show a decreasing trend based on the fit lines
+
+```{exercise}
+Make a single scatterplot visualization that demonstrates the relationship between `sat`, `salary`, and `expend`. Summarize the trivariate relationship between `sat`, `salary`, and `expend`. Hints: 1. Try using the color or size aesthetics to incorporate the expenditure data. 2. Include some model smooths with `geom_smooth()` to help highlight the trends.
+
+```
+
+```{r}
+ggplot(education, aes(y=sat, x=salary, color = expend)) + 
+        geom_point() + 
+        geom_smooth()
+```
+
+
+
+```{exercise}
+The `fracCat` variable in the `education` data categorizes the fraction of the state's students that take the SAT into `low` (below 15%), `medium` (15-45%), and `high` (at least 45%).
+
+a. Make a univariate visualization of the `fracCat` variable to better understand how many states fall into each category.   
+b. Make a bivariate visualization that demonstrates the relationship between `fracCat` and `sat`. What story does your graphic tell?
+c. Make a trivariate visualization that demonstrates the relationship between `fracCat`, `sat`, and `expend`. Incorporate `fracCat` as the color of each point, and use a single call to `geom_smooth` to add three trendlines (one for each `fracCat`). What story does your graphic tell?   
+d. Putting all of this together, explain this example of **Simpson’s Paradox**. That is, why does it appear that SAT scores decrease as spending increases even though the opposite is true?   
+
+```
+
+```{r}
+ggplot(education, aes(x=fracCat)) + 
+        geom_bar(position="dodge")
+```
+```{r}
+ ggplot(education, aes(y = sat, x=fracCat)) + 
+        geom_boxplot()
+```
+This data shows that actually states that have a higher percentage of their students taking the SAT tend to score worse as a whole with the lowest median score below 900 being from states with 45-100% of their students taking the test and the states with 0-15% scoring a median of around 1030. 
+
+# Other Multivariate Visualization Techniques
+
+## Heat maps    
+
+Note that each variable (column) is scaled to indicate states (rows) with high values (pink) to low values (blue).  With this in mind you can scan across rows & across columns to visually assess which states & variables are related, respectively. You can also play with the color scheme. Type `?cm.colors` in the console to see various options.    
+
+```{r, fig.width=10, fig.height=20, cache=TRUE}
+ed<-as.data.frame(education) # convert from tibble to data frame
+row.names(ed)<-ed$State
+ed<-ed[,2:8]
+ed_mat <- data.matrix(ed)
+heatmap.2(ed_mat, Rowv=NA, Colv=NA, scale="column",
+          keysize=.7,density.info="none",
+          col=heat.colors(256),margins=c(10,20),
+          colsep=c(1:7),rowsep=(1:50), sepwidth=c(0.05,0.05),
+          sepcolor="white",cexRow=2,cexCol=2,trace="none",
+          dendrogram="none")
+```    
+
+
+
+**Heat map with row clusters** 
+
+It can be tough to identify interesting patterns by visually comparing across rows and columns.  Including *dendrograms* helps to identify interesting clusters.
+
+```{r, fig.width=10, fig.height=20,cache=TRUE}
+heatmap.2(ed_mat, Colv=NA, scale="column",keysize=.7,
+          density.info="none",col=heat.colors(256),
+          margins=c(10,20),
+          colsep=c(1:7),rowsep=(1:50), sepwidth=c(0.05,0.05),
+          sepcolor="white",cexRow=2,cexCol=2,trace="none",
+          dendrogram="row")
+```  
+
+**Heat map with column clusters** 
+
+We can also construct a heat map which identifies interesting clusters of columns (variables).
+
+```{r, fig.width=10, fig.height=20, cache=TRUE}
+heatmap.2(ed_mat, Rowv=NA, scale="column",keysize=.7,
+          density.info="none", col=heat.colors(256),
+          margins=c(10,20),
+          colsep=c(1:7),rowsep=(1:50), sepwidth=c(0.05,0.05),
+          sepcolor="white",cexRow=2,cexCol=2,trace="none",
+          dendrogram="column")
+```   
+
+
+## Star plots    
+
+There's more than one way to visualize multivariate patterns. Like heat maps, these star plot visualizations indicate the relative scale of each variable for each state.  With this in mind, you can use the star maps to identify which state is the most "unusual." You can also do a quick scan of the second image to try to cluster states. How does that clustering compare to the one generated in the heat map with row clusters above?    
+
+```{r, fig.width=15, fig.height=18, cache=TRUE}
+stars(ed_mat, flip.labels=FALSE, 
+      key.loc=c(15,1.5),cex=1.5)
+stars(ed_mat, flip.labels=FALSE, 
+      key.loc=c(15,1.5), cex=1.5,draw.segments=TRUE)
+```    
+    
+I think the starplots are slightly easier to read the cluster ideas just because the lines in the heat map cross a lot and I find it hard to follow the path of some of the lines.

@@ -1,0 +1,84 @@
+---
+title: "Activity 1"
+author: "Joe Margolis"
+date: "9/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+# 3.1
+
+  Overall my favorite food is definitely sushi, but that is a broad food group. Some of my favorite types of sushi rolls include...
+  
+ 
+  
+  
+  * California Roll
+    + Spicy California
+    + Normal California
+  * Unagi Roll
+  * Rainbow Roll
+  * Spicy Tuna Roll
+  * Alaska Roll
+
+  
+  My favorite place to get sushi is a restaraunt called Midori in my hometown Chicago, Illinois. At Midori every meal comes with a starting of complimentary appetizers that are delicious. The order of appetizers goes...
+  
+  1. Green tea
+  2. Miso Soup
+  3. Green Beans with their spicy sauce
+  4. Mushrooms with their spicy sauce
+  5. Ginger salad
+  
+  Of course nothing beats when you see this boat of all the best sushi rolls Chicago has to offer on the way to your table...
+![](MidoriBoat.jpeg)
+
+
+# 3.2
+
+```{r}
+install.packages('fivethirtyeightdata', repos = 'https://fivethirtyeightdata.github.io/drat/', type = 'source')
+```
+
+## 3.2.A.)
+```{r}
+library(fivethirtyeightdata)
+comic <- data(comic_characters)
+```
+
+## 3.2.B.)
+```{r}
+head(comic_characters)
+```
+The units of observation in the comic_characters data set is each comic character and their actor. There are 23,272 units of observation in the data set.
+
+## 3.2.C.)
+
+```{r}
+head(comic_characters, 12)
+```
+## 3.2.D.)
+```{r}
+names(comic_characters)
+```
+
+## 3.2.E.)
+```{r}
+class(comic_characters$date)
+```
+The date variable in the comic_characters dataset is classified as a date.
+
+## 3.2.F.)
+```{r}
+na.omit(comic_characters$gsm)
+```
+
